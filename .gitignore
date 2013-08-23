@@ -15,3 +15,5 @@ share/
 fabtools/tests/Vagrantfile
 *.pyc
 *.swp
+.*
+!.gitignore
