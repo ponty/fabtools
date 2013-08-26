@@ -7,6 +7,7 @@ Version 0.16.0 (unreleased)
 * Redis improvements
     * Make bind and port arguments explicit
     * Improve documentation
+    * Upgrade default version to 2.6.15
 * Python improvements
     * Improve support for using specific Python interpreters (**warning**:
       API changes)
@@ -14,7 +15,11 @@ Version 0.16.0 (unreleased)
     * Improve pip installation
     * Switch from distribute to setuptools 0.7+ after project merge
       (**warning**: API changes)
-
+    * Do not install `curl` and `python-dev` packages when setuptools
+      is already installed (ponty)
+    * Make package names case-insensitive in python.is_installed
+      (ponty)
+* Fix ``require.system.locales`` when a prefix is set
 
 
 Version 0.15.0 (2013-07-25)
