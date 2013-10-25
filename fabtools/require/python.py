@@ -71,8 +71,24 @@ def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python'):
 
     .. _pip: http://www.pip-installer.org/
     """
+
+    from fabtools.require.deb import packages as require_deb_packages
+    from fabtools.require.rpm import packages as require_rpm_packages
+
     setuptools(python_cmd=python_cmd)
     if not is_pip_installed(version, pip_cmd=pip_cmd):
+        family = distrib_family()
+
+        if family == 'debian':
+            require_deb_packages([
+                'curl',
+            ])
+
+        elif family == 'redhat':
+            require_rpm_packages([
+                'curl',
+            ])
+
         install_pip(python_cmd=python_cmd)
 
 
