@@ -216,3 +216,16 @@ def cpus():
         res = run('python -c "import multiprocessing; '
                   'print(multiprocessing.cpu_count())"')
         return int(res)
+
+
+def set_timezone(timezone):
+    '''
+    '''
+    family = distrib_family()
+
+    if family == 'debian':
+        run_as_root('echo "%s" > /etc/timezone' % timezone)
+        run_as_root('dpkg-reconfigure --frontend noninteractive tzdata')
+#         require.service.restarted('cron')
+    else:
+        raise NotImplementedError('set_timezone is not implemented for "%(family)s"' % locals())

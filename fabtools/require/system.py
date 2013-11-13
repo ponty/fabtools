@@ -6,7 +6,7 @@ from __future__ import with_statement
 
 from re import escape
 
-from fabric.api import settings, warn
+from fabric.api import settings, warn, hide, run
 from fabric.contrib.files import append, uncomment
 
 from fabtools.files import is_file, watch
@@ -15,6 +15,7 @@ from fabtools.system import (
     get_hostname, set_hostname,
     get_sysctl, set_sysctl,
     supported_locales,
+    set_timezone,
 )
 from fabtools.utils import run_as_root
 
@@ -105,3 +106,22 @@ def default_locale(name):
     else:
         config_file = '/etc/default/locale'
     require_file(config_file, contents, use_sudo=True)
+
+
+def timezone(timezone):
+    '''
+    '''
+    family = distrib_family()
+
+    if family == 'debian':
+        with settings(hide('commands'), warn_only=True):
+            result = run('grep -q "^%s$" /etc/timezone' % timezone)
+            ret_code = result.return_code
+        if ret_code == 0:
+            return
+        elif ret_code == 1:
+            set_timezone(timezone)
+        else:
+            raise SystemExit()
+    else:
+        raise NotImplementedError('timezone is not implemented for "%(family)s"' % locals())
