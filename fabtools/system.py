@@ -229,3 +229,19 @@ def set_timezone(timezone):
 #         require.service.restarted('cron')
     else:
         raise NotImplementedError('set_timezone is not implemented for "%(family)s"' % locals())
+
+
+def using_systemd():
+    """
+    Return True if using systemd
+
+    Example::
+
+        from fabtools.system import use_systemd
+
+        if using_systemd():
+            # do stuff with fabtools.systemd ...
+            pass
+
+    """
+    return run('which systemctl', quiet=True).succeeded
