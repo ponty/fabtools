@@ -80,7 +80,7 @@ def install(packages, update=False, options=None):
     run_as_root(cmd, pty=False)
 
 
-def uninstall(packages, options=None):
+def uninstall(packages, options=None, force_depends=False, force_removal_of_dependent_packages=False):
     """
     Remove one or more packages.
 
@@ -93,6 +93,10 @@ def uninstall(packages, options=None):
     if not isinstance(packages, basestring):
         packages = " ".join(packages)
     options = " ".join(options)
+    if force_depends:
+        options +=' --force-depends'
+    if force_removal_of_dependent_packages:
+        options += ' --force-removal-of-dependent-packages'
     cmd = '%(manager)s %(command)s %(options)s %(packages)s' % locals()
     run_as_root(cmd, pty=False)
 

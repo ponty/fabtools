@@ -51,7 +51,7 @@ def packages(pkg_list, update=False):
         install(pkg_list, update)
 
 
-def nopackage(pkg_name):
+def nopackage(pkg_name, force_depends=False, force_removal_of_dependent_packages=False):
     """
     Require a opkg package to be uninstalled.
 
@@ -62,10 +62,10 @@ def nopackage(pkg_name):
         require.opkg.nopackage('apache2')
     """
     if is_installed(pkg_name):
-        uninstall(pkg_name)
+        uninstall(pkg_name, force_depends=force_depends, force_removal_of_dependent_packages=force_removal_of_dependent_packages)
 
 
-def nopackages(pkg_list):
+def nopackages(pkg_list, force_depends=False, force_removal_of_dependent_packages=False):
     """
     Require several opkg packages to be uninstalled.
 
@@ -81,5 +81,5 @@ def nopackages(pkg_list):
     """
     pkg_list = [pkg for pkg in pkg_list if is_installed(pkg)]
     if pkg_list:
-        uninstall(pkg_list)
+        uninstall(pkg_list, force_depends=force_depends, force_removal_of_dependent_packages=force_removal_of_dependent_packages)
 
