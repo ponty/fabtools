@@ -17,6 +17,7 @@ fabtools
    opkg
    oracle_jdk
    pkg
+   portage
    postgres
    python
    python_setuptools
@@ -28,4 +29,5 @@ fabtools
    systemd
    user
    utils
+   tomcat
    vagrant

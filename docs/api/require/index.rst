@@ -16,6 +16,7 @@ fabtools.require
    opkg
    oracle_jdk
    pkg
+   portage
    postfix
    postgres
    python
@@ -25,4 +26,5 @@ fabtools.require
    shorewall
    supervisor
    system
+   tomcat
    users
