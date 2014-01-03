@@ -233,5 +233,5 @@ def last_update_time():
     """
     STAMP = '/var/lib/apt/periodic/update-success-stamp'
     if not is_file(STAMP):
-        return -1
+        return None
     return getmtime(STAMP)

@@ -23,6 +23,7 @@ from fabtools.files import is_file, watch
 from fabtools.system import distrib_codename, distrib_release
 from fabtools.utils import run_as_root
 from fabtools import system
+import files
 
 
 def key(keyid, filename=None, url=None, keyserver='subkeys.pgp.net', update=False):
@@ -220,6 +221,10 @@ def uptodate_index(quiet=True, max_age=86400):
     Update APT package definitions (``apt-get update``) only
     if specified time since last update already elapsed.
 
+    Configure apt (/etc/apt/apt.conf.d/15update-stamp)
+    to create timestamp (/var/lib/apt/periodic/update-success-stamp)
+    always.
+
     Example::
 
         from fabtools import require
@@ -231,5 +236,15 @@ def uptodate_index(quiet=True, max_age=86400):
         require.deb.uptodate_index(max_age={'hour': 1, 'minutes': 30})
 
     """
-    if system.time() - last_update_time() > _to_seconds(max_age):
+
+    # some distribution doesn't create update-success-stamp by default,
+    # that's why this additional configuration is set:
+    STAMP = '/var/lib/apt/periodic/update-success-stamp'
+    path = '/etc/apt/apt.conf.d/15update-stamp'
+    contents = 'APT::Update::Post-Invoke {"touch %s 2>/dev/null || true";};' % STAMP
+    files.file(path=path, contents=contents, use_sudo=True)
+
+    # check time, and update index if necessary
+    last = last_update_time()
+    if last is None or system.time() - last > _to_seconds(max_age):
         update_index(quiet=quiet)
