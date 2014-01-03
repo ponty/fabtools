@@ -58,7 +58,7 @@ def base_boxes():
         if res.failed:
             return []
         else:
-            return res.splitlines()
+            return [x.split('(virtualbox)')[0] for x in res.splitlines()]
 
 
 class VagrantTestSuite(unittest.BaseTestSuite):
