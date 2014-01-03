@@ -71,7 +71,6 @@ def pip(version=MIN_PIP_VERSION, pip_cmd='pip', python_cmd='python'):
 
     .. _pip: http://www.pip-installer.org/
     """
-
     setuptools(python_cmd=python_cmd)
     if not is_pip_installed(version, pip_cmd=pip_cmd):
         install_pip(python_cmd=python_cmd)
