@@ -240,9 +240,9 @@ def uptodate_index(quiet=True, max_age=86400):
     # some distribution doesn't create update-success-stamp by default,
     # that's why this additional configuration is set:
     STAMP = '/var/lib/apt/periodic/update-success-stamp'
-    path = '/etc/apt/apt.conf.d/15update-stamp'
-    contents = 'APT::Update::Post-Invoke {"touch %s 2>/dev/null || true";};' % STAMP
-    files.file(path=path, contents=contents, use_sudo=True)
+    CONFIG_PATH = '/etc/apt/apt.conf.d/15update-stamp-fabtools'
+    contents = 'APT::Update::Post-Invoke-Success {"touch %s 2>/dev/null || true";};\n' % STAMP
+    files.file(path=CONFIG_PATH, contents=contents, use_sudo=True)
 
     # check time, and update index if necessary
     last = last_update_time()
