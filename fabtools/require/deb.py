@@ -23,7 +23,6 @@ from fabtools.files import is_file, watch
 from fabtools.system import distrib_codename, distrib_release
 from fabtools.utils import run_as_root
 from fabtools import system
-import files
 
 
 def key(keyid, filename=None, url=None, keyserver='subkeys.pgp.net', update=False):

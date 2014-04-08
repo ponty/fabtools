@@ -23,7 +23,6 @@ from fabric.utils import puts
 
 from fabtools.files import is_file
 from fabtools.utils import abspath, run_as_root
-from fabtools.system import distrib_family
 
 
 def is_pip_installed(version=None, pip_cmd='pip'):
