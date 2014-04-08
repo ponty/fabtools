@@ -1,6 +1,6 @@
 """
 opkg packages
-===============
+=============
 
 This module provides tools to manage opkg packages
 and repositories.
@@ -99,4 +99,3 @@ def uninstall(packages, options=None, force_depends=False, force_removal_of_depe
         options += ' --force-removal-of-dependent-packages'
     cmd = '%(manager)s %(command)s %(options)s %(packages)s' % locals()
     run_as_root(cmd, pty=False)
-

@@ -8,14 +8,23 @@ directories.
 """
 from __future__ import with_statement
 
-import hashlib
-import os
+from pipes import quote
 from tempfile import mkstemp
 from urlparse import urlparse
+import hashlib
+import os
 
 from fabric.api import hide, put, run, settings
 
-from fabtools.files import is_file, is_dir, md5sum
+from fabtools.files import (
+    group as _group,
+    is_file,
+    is_dir,
+    md5sum,
+    mode as _mode,
+    owner as _owner,
+    umask,
+)
 from fabtools.utils import run_as_root
 import fabtools.files
 
@@ -43,13 +52,14 @@ def directory(path, use_sudo=False, owner='', group='', mode=''):
         func('mkdir -p "%(path)s"' % locals())
 
     # Ensure correct owner
-    if (owner and fabtools.files.owner(path, use_sudo) != owner) or \
-       (group and fabtools.files.group(path, use_sudo) != group):
+    if (owner and _owner(path, use_sudo) != owner) or \
+       (group and _group(path, use_sudo) != group):
         func('chown %(owner)s:%(group)s "%(path)s"' % locals())
 
     # Ensure correct mode
-    if mode and fabtools.files.mode(path, use_sudo) != mode:
+    if mode and _mode(path, use_sudo) != mode:
         func('chmod %(mode)s "%(path)s"' % locals())
+
 
 def directories(path_list, use_sudo=False, owner='', group='', mode=''):
     """
@@ -73,7 +83,8 @@ def directories(path_list, use_sudo=False, owner='', group='', mode=''):
 
 
 def file(path=None, contents=None, source=None, url=None, md5=None,
-         use_sudo=False, owner=None, group='', mode=None, verify_remote=True):
+         use_sudo=False, owner=None, group='', mode=None, verify_remote=True,
+         temp_dir='/tmp'):
     """
     Require a file to exist and have specific contents and properties.
 
@@ -104,6 +115,18 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
     source. If this is ``False``, the file will be assumed to be the
     same if it is present. This is useful for very large files, where
     generating an MD5 sum may take a while.
+
+    When providing either the *contents* or the *source* parameter, Fabric's
+    ``put`` function will be used to upload the file to the remote host.
+    When ``use_sudo`` is ``True``, the file will first be uploaded to a temporary
+    directory, then moved to its final location. The default temporary
+    directory is ``/tmp``, but can be overridden with the *temp_dir* parameter.
+    If *temp_dir* is an empty string, then the user's home directory will
+    be used.
+
+    If `use_sudo` is `True`, then the remote file will be owned by root,
+    and its mode will reflect root's default *umask*. The optional *owner*,
+    *group* and *mode* parameters can be used to override these properties.
 
     .. note:: This function can be accessed directly from the
               ``fabtools.require`` module for convenience.
@@ -155,18 +178,22 @@ def file(path=None, contents=None, source=None, url=None, md5=None,
                 (verify_remote and
                     md5sum(path, use_sudo=use_sudo) != digest.hexdigest())):
             with settings(hide('running')):
-                put(source, path, use_sudo=use_sudo)
+                put(source, path, use_sudo=use_sudo, temp_dir=temp_dir)
 
         if t is not None:
             os.unlink(source)
 
     # Ensure correct owner
-    if (owner and fabtools.files.owner(path, use_sudo) != owner) or \
-       (group and fabtools.files.group(path, use_sudo) != group):
+    if use_sudo and owner is None:
+        owner = 'root'
+    if (owner and _owner(path, use_sudo) != owner) or \
+       (group and _group(path, use_sudo) != group):
         func('chown %(owner)s:%(group)s "%(path)s"' % locals())
 
     # Ensure correct mode
-    if mode and fabtools.files.mode(path, use_sudo) != mode:
+    if use_sudo and mode is None:
+        mode = oct(0666 & ~int(umask(use_sudo=True), base=8))
+    if mode and _mode(path, use_sudo) != mode:
         func('chmod %(mode)s "%(path)s"' % locals())
 
 
@@ -182,3 +209,21 @@ def template_file(path=None, template_contents=None, template_source=None, conte
         context = {}
 
     file(path=path, contents=template_contents % context, **kwargs)
+
+
+def temporary_directory():
+    """
+    Require a file whose contents is defined by a template.
+    """
+    with hide('running', 'stdout'):
+        path = run('mktemp --directory')
+    return TemporaryDirectory(path)
+
+
+class TemporaryDirectory(str):
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        run('rm -rf %s' % quote(self))

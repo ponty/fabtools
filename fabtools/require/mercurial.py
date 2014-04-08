@@ -14,6 +14,7 @@ from fabric.api import run
 
 from fabtools import mercurial
 from fabtools.files import is_dir
+from fabtools.system import UnsupportedFamily
 
 
 def command():
@@ -30,7 +31,6 @@ def command():
 
     """
     from fabtools.require.deb import package as require_deb_package
-    from fabtools.require.pkg import package as require_pkg_package
     from fabtools.require.rpm import package as require_rpm_package
     from fabtools.require.portage import package as require_portage_package
     from fabtools.system import distrib_family
@@ -38,13 +38,14 @@ def command():
     res = run('hg --version', quiet=True)
     if res.failed:
         family = distrib_family()
-        if family == 'gentoo':
+        if family == 'debian':
+            require_deb_package('mercurial')
+        elif family == 'gentoo':
             require_portage_package('mercurial')
         elif family == 'redhat':
             require_rpm_package('mercurial')
         else:
-            raise NotImplementedError("Mercurial install package for %s "
-                                      "not known." % family)
+            raise UnsupportedFamily(supported=['debian', 'redhat', 'gentoo'])
 
 
 def working_copy(remote_url, path=None, branch="default", update=True,

@@ -5,10 +5,13 @@ fabtools.require
    :maxdepth: 1
 
    apache
+   arch
+   curl
    deb
    files
    git
    groups
+   mercurial
    mysql
    nginx
    nodejs

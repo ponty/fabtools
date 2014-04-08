@@ -12,20 +12,7 @@ from fabric.state import connections
 
 import fabtools
 from fabtools import require
-
-
-def version():
-    """
-    Get the vagrant version as a tuple
-    """
-    with settings(hide('running')):
-        res = local('vagrant --version', capture=True)
-    parts = res.split()
-    if len(parts) == 3:
-        ver = parts[2]
-    else:
-        ver = parts[1]
-    return tuple(map(int, ver.split('.')))
+from fabtools.vagrant import base_boxes, status, version
 
 
 def halt_and_destroy():
@@ -41,7 +28,7 @@ def halt_and_destroy():
                 local('vagrant destroy')
 
 
-def base_boxes():
+def test_boxes():
     """
     Get the list of vagrant base boxes to use
 
@@ -53,12 +40,7 @@ def base_boxes():
     if boxes is not None:
         return boxes.split()
     else:
-        with settings(warn_only=True):
-            res = local('vagrant box list', capture=True)
-        if res.failed:
-            return []
-        else:
-            return [x.split('(virtualbox)')[0] for x in res.splitlines()]
+        return base_boxes()
 
 
 class VagrantTestSuite(unittest.BaseTestSuite):
@@ -127,7 +109,8 @@ class VagrantTestSuite(unittest.BaseTestSuite):
                 local('vagrant init %s' % box_name)
 
                 # Clean up
-                halt_and_destroy()
+                if status() != 'not created':
+                    halt_and_destroy()
 
             if provider:
                 options = ' --provider %s' % provider
